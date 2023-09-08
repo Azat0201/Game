@@ -7,6 +7,7 @@ WINDOW_HEIGTH = 1080
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGTH)
 FPS = 100
 SURFACE_SIZE = 500
+
 window = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption('Матрица Lite')
 pygame.init()
@@ -14,7 +15,7 @@ gui_manager = pygame_gui.UIManager(WINDOW_SIZE)
 
 TEXT_FONT = pygame.font.SysFont('Verdana', 15)
 TEXT_COLOR = pygame.Color('green')
-TEXT_SYMBOLS = '1234567890-=+_)(*&^%$#!"№;:?qwertyuiop[]|\\{}QWERTYUIOPйцукенгшщзхъЙЦУКЕНГШЩЗХЪ/asdfghjklASDFGHJKLфывапролджэФЫВАПРОЛДЖЭzxcvbnm,.ZXCVBNM<>ячсмитьбюЯЧСМИТЬБЮ'
+TEXT_SYMBOLS = '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM123456789012345678901234567890'
 TEXT_POSITION = [(randint(1, WINDOW_WIDTH), randint(1, WINDOW_HEIGTH)) for i in range(SURFACE_SIZE)]
 NORMAL_TEXT_SPEED = tuple((0, randint(1, 100)) for i in range(SURFACE_SIZE))
 ZERO_TEXT_SPEED = tuple((0, 0) for _ in range(SURFACE_SIZE))
@@ -29,6 +30,28 @@ BUTTON_POSY = WINDOW_HEIGTH // 2 - BUTTON_HEIGTH // 2
 BUTTON1_TITLE = 'Матрица!'
 BUTTON2_TITLE = 'Пауза!'
 BUTTON3_TITLE = 'Выход!'
+
+
+def change_surface_list():
+    global TEXT_SURFACE_LIST
+    if TEXT_SURFACE_LIST:
+        TEXT_SURFACE_LIST = []
+    else:
+        for i in range(SURFACE_SIZE):
+            text_symbol = choice(TEXT_SYMBOLS)
+            TEXT_SURFACE_LIST.append(TEXT_FONT.render(text_symbol, True, TEXT_COLOR))
+
+def change_speed():
+    global TEXT_SPEED
+    if TEXT_SPEED[0][1]:
+        TEXT_SPEED = ZERO_TEXT_SPEED
+    else:
+        TEXT_SPEED = NORMAL_TEXT_SPEED
+
+
+def quitf():
+    pygame.quit()
+    quit()
 
 
 class Butoon:
@@ -54,25 +77,23 @@ while True:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
+            quitf()
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if button1.rect.collidepoint(event.pos):
-                if TEXT_SURFACE_LIST:
-                    TEXT_SURFACE_LIST = []
-                else:
-                    for i in range(SURFACE_SIZE):
-                        text_symbol = choice(TEXT_SYMBOLS)
-                        TEXT_SURFACE_LIST.append(TEXT_FONT.render(text_symbol, True, TEXT_COLOR))
+                change_surface_list()
             elif button2.rect.collidepoint(event.pos):
-                if TEXT_SPEED[0][1]:
-                    TEXT_SPEED = ZERO_TEXT_SPEED
-                else:
-                    TEXT_SPEED = NORMAL_TEXT_SPEED
+                change_speed()
             elif button3.rect.collidepoint(event.pos):
-                pygame.quit()
-                quit()
+                quitf()
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_e:
+                change_surface_list()
+            elif event.key == pygame.K_w:
+                change_speed()
+            elif event.key == pygame.K_q:
+                quitf()
 
         gui_manager.process_events(event)
 
@@ -83,18 +104,18 @@ while True:
     for i in range(SURFACE_SIZE):
         TEXT_POSITION[i] = (TEXT_POSITION[i][0], TEXT_POSITION[i][1] + TEXT_SPEED[i][1])
         if TEXT_POSITION[i][1] > WINDOW_SIZE[1]:
-            TEXT_POSITION[i] = (randint(0, WINDOW_SIZE[0]), -20)
+            TEXT_POSITION[i] = (randint(1, WINDOW_SIZE[0]), randint(-50, WINDOW_HEIGTH - 100))
         if len(TEXT_SURFACE_LIST) > i:
             window.blit(TEXT_SURFACE_LIST[i], TEXT_POSITION[i])
 
-    pygame.draw.rect(window, button1.button_color, button1.rect)
+    '''pygame.draw.rect(window, button1.button_color, button1.rect)
     window.blit(button1.title, button1.get_rect_center())
 
     pygame.draw.rect(window, button2.button_color, button2.rect)
     window.blit(button2.title, button2.get_rect_center())
 
     pygame.draw.rect(window, button3.button_color, button3.rect)
-    window.blit(button3.title, button3.get_rect_center())
+    window.blit(button3.title, button3.get_rect_center())'''
 
     gui_manager.draw_ui(window)
     pygame.display.update()

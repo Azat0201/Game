@@ -1,0 +1,16 @@
+Settings:
+5 - snake speed (the lower value, the higher speed)
+100 - food spawn frequency (the lower value, the more amount)
+950 - screen width
+900 - screen height
+1 - increase in time due to amount of food (0 - False, 1 - True)
+0 - can crash into wall (0 - False, 1 - True)
+0 - can crash into yourself (0 - False, 1 - True)
+
+Colors:
+(0,0,0) - screen color
+green - snake color
+black - eye_color
+yellow - food_color
+
+For colors may use it name, hex or rgb code example(red, #B4F17D, (214,73,82))

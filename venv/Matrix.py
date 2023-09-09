@@ -68,9 +68,9 @@ class Butoon:
         return self.title.get_rect(center=self.rect.center)
 
 
-button1 = Butoon(BUTTON_POSX - 100, BUTTON_POSY, BUTTON1_TITLE, button_color='#000000', text_color='#000000')
-button2 = Butoon(BUTTON_POSX + 100, BUTTON_POSY, BUTTON2_TITLE, button_color='#000000', text_color='#000000')
-button3 = Butoon(BUTTON_POSX + 000, BUTTON_POSY, BUTTON3_TITLE, button_color='#000000', text_color='#000000')
+button1 = Butoon(BUTTON_POSX + 100, BUTTON_POSY, BUTTON1_TITLE, button_color='#555555', text_color='#000000')
+button2 = Butoon(BUTTON_POSX + 000, BUTTON_POSY, BUTTON2_TITLE, button_color='#555555', text_color='#000000')
+button3 = Butoon(BUTTON_POSX - 100, BUTTON_POSY, BUTTON3_TITLE, button_color='#555555', text_color='#000000')
 
 while True:
     TIME_DELTA = pygame.time.Clock().tick(FPS)
@@ -104,18 +104,18 @@ while True:
     for i in range(SURFACE_SIZE):
         TEXT_POSITION[i] = (TEXT_POSITION[i][0], TEXT_POSITION[i][1] + TEXT_SPEED[i][1])
         if TEXT_POSITION[i][1] > WINDOW_SIZE[1]:
-            TEXT_POSITION[i] = (randint(1, WINDOW_SIZE[0]), randint(-50, WINDOW_HEIGTH - 100))
+            TEXT_POSITION[i] = (randint(1, WINDOW_SIZE[0]), randint(-WINDOW_HEIGTH + 100, WINDOW_HEIGTH - 100))
         if len(TEXT_SURFACE_LIST) > i:
             window.blit(TEXT_SURFACE_LIST[i], TEXT_POSITION[i])
 
-    '''pygame.draw.rect(window, button1.button_color, button1.rect)
+    pygame.draw.rect(window, button1.button_color, button1.rect)
     window.blit(button1.title, button1.get_rect_center())
 
     pygame.draw.rect(window, button2.button_color, button2.rect)
     window.blit(button2.title, button2.get_rect_center())
 
     pygame.draw.rect(window, button3.button_color, button3.rect)
-    window.blit(button3.title, button3.get_rect_center())'''
+    window.blit(button3.title, button3.get_rect_center())
 
     gui_manager.draw_ui(window)
     pygame.display.update()

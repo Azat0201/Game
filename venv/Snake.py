@@ -13,6 +13,7 @@ with open('Settings for snake', encoding='utf8') as file:
 colors = [tuple(map(int, color[1:-1].split(','))) if color.startswith('(') else color for color in colors]
 
 SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, CAN_CRASH_WALL, CAN_CRASH_SELF = data
+WINDOW_COLOR, SNAKE_COLOR, EYE_COLOR, FOOD_COLOR, TEXT_COLOR = colors
 
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 FPS = 60
@@ -68,7 +69,7 @@ while True:
             elif event.key == pygame.K_d and direction[0] != -1:
                 direction = (1, 0)
 
-    window.fill(pygame.Color(colors[0]))
+    window.fill(pygame.Color(WINDOW_COLOR))
     for pos in snake:
         if not (0 <= pos[0] <= WINDOW_WIDTH and 0 <= pos[1] <= WINDOW_HEIGHT):
             if not CAN_CRASH_WALL:
@@ -78,12 +79,12 @@ while True:
                 pos = (abs(pos[0] - WINDOW_WIDTH), pos[1])
             if not (0 <= pos[1] <= WINDOW_WIDTH):
                 pos[1] = (pos[0], abs(pos[1] - WINDOW_WIDTH))
-        pygame.draw.circle(window, colors[1], (pos[0], pos[1]), RADIUS)
+        pygame.draw.circle(window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
         if pos == snake[-1]:
-            pygame.draw.circle(window, colors[2], (pos[0], pos[1]), RADIUS_FOOD)
+            pygame.draw.circle(window, EYE_COLOR, (pos[0], pos[1]), RADIUS_FOOD)
 
     for food in foods:
-        pygame.draw.circle(window, colors[3], (food[0], food[1]), RADIUS_FOOD)
+        pygame.draw.circle(window, FOOD_COLOR, (food[0], food[1]), RADIUS_FOOD)
         if abs(food[0] - snake[-1][0]) < RADIUS * 2 and abs(food[1] - snake[-1][1]) < RADIUS * 2:
             foods.remove(food)
             snake.insert(0, (snake[0][0] - (snake[1][0] - snake[0][0]), snake[0][1] - (snake[1][1] - snake[0][1])))
@@ -100,7 +101,7 @@ while True:
         init_new_game()
         continue
 
-    score_text = FONT.render("Очки: " + str(len(snake) - 5), True, colors[4])
+    score_text = FONT.render("Очки: " + str(len(snake) - 5), True, TEXT_COLOR)
     window.blit(score_text, (10, 10))
 
     pygame.display.update()

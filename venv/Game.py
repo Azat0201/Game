@@ -70,6 +70,12 @@ while True:
             if button2.rect.collidepoint(event.pos):
                 color -= 1
 
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w]:
+        color += 1
+    if keys[pygame.K_s]:
+        color -= 1
+
     window.blit(image, (WIDTH // 2 - IMAGE_WIDTH // 2, HEIGTH // 2 - IMAGE_HEIGTH // 2))
 
     pygame.draw.rect(window, button1.button_color, button1.rect)

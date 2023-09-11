@@ -1,5 +1,4 @@
 import pygame
-import pygame_gui
 from random import randint, choice
 
 WINDOW_WIDTH = 1920
@@ -11,7 +10,6 @@ SURFACE_SIZE = 500
 window = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption('Матрица Lite')
 pygame.init()
-gui_manager = pygame_gui.UIManager(WINDOW_SIZE)
 
 TEXT_FONT = pygame.font.SysFont('Verdana', 15)
 TEXT_COLOR = pygame.Color('green')
@@ -25,8 +23,8 @@ TEXT_SURFACE_LIST = []
 BUTTON_WIDTH = 100
 BUTTON_HEIGTH = 50
 BUTTON_SIZE = (BUTTON_WIDTH, BUTTON_HEIGTH)
-BUTTON_POSX = WINDOW_WIDTH // 2 - BUTTON_WIDTH // 2
-BUTTON_POSY = WINDOW_HEIGTH // 2 - BUTTON_HEIGTH // 2
+BUTTON_POSX = BUTTON_WIDTH
+BUTTON_POSY = 0
 BUTTON1_TITLE = 'Матрица!'
 BUTTON2_TITLE = 'Пауза!'
 BUTTON3_TITLE = 'Выход!'
@@ -95,10 +93,6 @@ while True:
             elif event.key == pygame.K_q:
                 quitf()
 
-        gui_manager.process_events(event)
-
-    gui_manager.update(TIME_DELTA)
-
     window.fill(pygame.Color('black'))
 
     for i in range(SURFACE_SIZE):
@@ -117,5 +111,4 @@ while True:
     pygame.draw.rect(window, button3.button_color, button3.rect)
     window.blit(button3.title, button3.get_rect_center())
 
-    gui_manager.draw_ui(window)
     pygame.display.update()

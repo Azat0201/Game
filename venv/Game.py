@@ -4,7 +4,7 @@ import pygame
 
 WIDTH = 1200
 HEIGTH = 707
-SCREEN_SIZE = (WIDTH, HEIGTH)
+window_SIZE = (WIDTH, HEIGTH)
 IMAGE_WIDTH = 400
 IMAGE_HEIGTH = 400
 IMAGE_SIZE = (IMAGE_WIDTH, IMAGE_HEIGTH)
@@ -12,7 +12,6 @@ FPS = 30
 
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
-WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 ORANGE = (255, 150, 0)
 YELLOW = (255, 255, 0)
@@ -25,16 +24,15 @@ for color in (RED, ORANGE, YELLOW, GREEN, LIGTH_BLUE, BLUE, PURPLE):
     COLORS += (color, )
 
 pygame.init()
-#pygame.mixer.init()
-screen = pygame.display.set_mode(SCREEN_SIZE)
-background = pygame.Surface(SCREEN_SIZE)
-background.fill(pygame.Color(BLACK))
+window = pygame.display.set_mode(window_SIZE)
+background = pygame.Surface(window_SIZE)
+background.fill(pygame.Color(COLORS[0]))
 pygame.display.set_caption("Game")
 clock = pygame.time.Clock()
 
 image = pygame.image.load("ball.jpg")
 image = pygame.transform.scale(image, IMAGE_SIZE)
-screen.blit(image, (0, 0))
+window.blit(image, (0, 0))
 
 class Butoon:
     def __init__(self, x, y, title="", width=150, heigt=75, font='Verdana', size_font=12, button_color=GRAY, text_color=BLACK):
@@ -54,7 +52,7 @@ button2 = Butoon(WIDTH // 2 + 100, HEIGTH // 2, title='Назад!')
 
 color = 0
 while True:
-    screen.fill(COLORS[color % len(COLORS)])
+    window.fill(COLORS[color % len(COLORS)])
     clock.tick(FPS)
 
     for event in pygame.event.get():
@@ -72,12 +70,12 @@ while True:
             if button2.rect.collidepoint(event.pos):
                 color -= 1
 
-    screen.blit(image, (WIDTH // 2 - IMAGE_WIDTH // 2, HEIGTH // 2 - IMAGE_HEIGTH // 2))
+    window.blit(image, (WIDTH // 2 - IMAGE_WIDTH // 2, HEIGTH // 2 - IMAGE_HEIGTH // 2))
 
-    pygame.draw.rect(screen, button1.button_color, button1.rect)
-    screen.blit(button1.text, button1.get_rect_center())
+    pygame.draw.rect(window, button1.button_color, button1.rect)
+    window.blit(button1.text, button1.get_rect_center())
 
-    pygame.draw.rect(screen, button2.button_color, button2.rect)
-    screen.blit(button2.text, button2.get_rect_center())
+    pygame.draw.rect(window, button2.button_color, button2.rect)
+    window.blit(button2.text, button2.get_rect_center())
 
     pygame.display.update()

@@ -8,7 +8,7 @@ with open('Settings for snake', encoding='utf8') as file:
     data = [int(file.readline().split()[0].strip()) for _ in range(7)]
     file.readline()
     file.readline()
-    colors = [file.readline().split()[0].strip() for _ in range(4)]
+    colors = [file.readline().split()[0].strip() for _ in range(5)]
 
 colors = [tuple(map(int, color[1:-1].split(','))) if color.startswith('(') else color for color in colors]
 
@@ -22,6 +22,8 @@ RADIUS_FOOD = RADIUS // 2
 window = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption('Snake')
 pygame.init()
+
+FONT = pygame.font.SysFont("Verdana", 15)
 
 def init_new_game():
     global direction, foods, iter_food, iter_snake, snake
@@ -43,11 +45,12 @@ def create_food():
         foods.append(pos)
 
 init_new_game()
-
+Start_ii = False
 
 while True:
     iter_food += 1
     iter_snake += 1
+
     TIME_DELTA = pygame.time.Clock().tick(FPS)
 
     for event in pygame.event.get():
@@ -96,5 +99,8 @@ while True:
     if not CAN_CRASH_SELF and len(set(snake)) != len(snake):
         init_new_game()
         continue
+
+    score_text = FONT.render("Очки: " + str(len(snake) - 5), True, colors[4])
+    window.blit(score_text, (10, 10))
 
     pygame.display.update()

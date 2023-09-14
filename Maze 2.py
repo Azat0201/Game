@@ -5,7 +5,7 @@ from time import sleep
 pygame.init()
 WINDOW_WIDTH = 1000
 WINDOW_HEIGHT = 500
-window = pygame.display.set_mode((WINDOW_WIDTH + 50, WINDOW_HEIGHT))
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Maze 2')
 
 WINDOW_COLOR = (0,0,0)
@@ -86,7 +86,6 @@ while True:
     if time >= GAP // SPEED_X:
         lines.extend(create_line(lines[-1].x + GAP))
 
-        print(lines)
         if time >= GAP // SPEED_X + 50:
             time = 0
             x = lines[0].x

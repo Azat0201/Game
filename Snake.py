@@ -13,6 +13,8 @@ with open('Settings for snake', encoding='utf8') as file:
 colors = [tuple(map(int, color[1:-1].split(','))) if color.startswith('(') else color for color in colors]
 
 SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, CAN_CRASH_WALL, CAN_CRASH_SELF = data
+WINDOW_WIDTH -= WINDOW_WIDTH % 30
+WINDOW_HEIGHT -= WINDOW_HEIGHT % 30
 WINDOW_COLOR, SNAKE_COLOR, EYE_COLOR, FOOD_COLOR, TEXT_COLOR = colors
 
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -26,6 +28,7 @@ pygame.init()
 
 FONT = pygame.font.SysFont("Verdana", 15)
 
+
 def init_new_game():
     global direction, foods, iter_food, iter_snake, snake
     direction = (1, 0)
@@ -33,6 +36,7 @@ def init_new_game():
     iter_food = 0
     iter_snake = 0
     snake = [(WINDOW_WIDTH // 2 - RADIUS * 2 * i, WINDOW_HEIGHT // 2) for i in range(5, 0, -1)]
+
 
 def create_food():
     pos = foods[0]
@@ -46,13 +50,12 @@ def create_food():
         foods.append(pos)
 
 init_new_game()
-Start_ii = False
 
 while True:
     iter_food += 1
     iter_snake += 1
 
-    TIME_DELTA = pygame.time.Clock().tick(FPS)
+    pygame.time.Clock().tick(FPS)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -70,24 +73,30 @@ while True:
                 direction = (1, 0)
 
     window.fill(pygame.Color(WINDOW_COLOR))
-    for pos in snake:
-        if not (0 <= pos[0] <= WINDOW_WIDTH and 0 <= pos[1] <= WINDOW_HEIGHT):
-            if not CAN_CRASH_WALL:
-                init_new_game()
-                continue
-            if not (0 <= pos[0] <= WINDOW_WIDTH):
-                pos = (abs(pos[0] - WINDOW_WIDTH), pos[1])
-            if not (0 <= pos[1] <= WINDOW_WIDTH):
-                pos[1] = (pos[0], abs(pos[1] - WINDOW_WIDTH))
-        pygame.draw.circle(window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
-        if pos == snake[-1]:
-            pygame.draw.circle(window, EYE_COLOR, (pos[0], pos[1]), RADIUS_FOOD)
-
     for food in foods:
         pygame.draw.circle(window, FOOD_COLOR, (food[0], food[1]), RADIUS_FOOD)
         if abs(food[0] - snake[-1][0]) < RADIUS * 2 and abs(food[1] - snake[-1][1]) < RADIUS * 2:
             foods.remove(food)
             snake.insert(0, (snake[0][0] - (snake[1][0] - snake[0][0]), snake[0][1] - (snake[1][1] - snake[0][1])))
+
+
+    for pos in snake:
+        if not (0 <= pos[0] <= WINDOW_WIDTH and 0 <= pos[1] <= WINDOW_HEIGHT):
+            if not CAN_CRASH_WALL:
+                init_new_game()
+                continue
+
+            print(pos)
+            if not (0 <= pos[0] <= WINDOW_WIDTH):
+                change = WINDOW_WIDTH - RADIUS if pos[0] < 0 else RADIUS
+                snake[snake.index(pos)] = (change - change % RADIUS, pos[1])
+            if not (0 <= pos[1] <= WINDOW_WIDTH):
+                change = WINDOW_HEIGHT - RADIUS if pos[1] < 0 else RADIUS
+                snake[snake.index(pos)] = (pos[0], change - change % RADIUS)
+
+        pygame.draw.circle(window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
+        if pos == snake[-1]:
+            pygame.draw.circle(window, EYE_COLOR, (pos[0], pos[1]), RADIUS_FOOD)
 
     if iter_food >= SPEED_FOOD + (2 if DECREASE_SPEED_FOOD else 0) ** (len(foods)):
         iter_food = 0

@@ -2,8 +2,8 @@ import pygame
 from random import randint
 
 pygame.init()
-WINDOW_WIDTH = 500
-WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 600
+WINDOW_HEIGHT = 1000
 WINDOW_COLOR = 'black'
 FPS = 60
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -12,12 +12,12 @@ pygame.display.set_caption('Rain')
 WATER_SPEED = 1
 RAIN_WIDTH = 2
 RAIN_HEIGHT = 7
-RAIN_COLOR = '#33CCFF'
+RAIN_COLOR = '#11438B'
 MIN_RAIN_SPEED = 3
 MAX_RAINS_SPEED = 10
-DROPS_IN_WATER = 30
+DROPS_IN_WATER = 1
 
-drops = -DROPS_IN_WATER * 2
+drops = -WINDOW_HEIGHT // 8
 water_y = 0
 rain = []
 
@@ -26,7 +26,7 @@ while True:
     window.fill(WINDOW_COLOR)
 
     if water_y == WINDOW_HEIGHT:
-        drops = -DROPS_IN_WATER * 2
+        drops = -WINDOW_HEIGHT // 4
         water_y = 0
         rain = []
 

@@ -135,6 +135,9 @@ def init_new_game():
                         direction = (0, 1)
                     elif event.key == pygame.K_d and direction[0] != -1:
                         direction = (1, 0)
+                    elif event.key == pygame.K_q:
+                        init_game_over()
+                        continue
 
             for food in foods:
                 pygame.draw.circle(snake_window, FOOD_COLOR, (food[0], food[1]), RADIUS_FOOD)
@@ -158,10 +161,10 @@ def init_new_game():
                     continue
                 if not (0 <= snake[-1][0] <= WINDOW_WIDTH):
                     change = WINDOW_WIDTH - RADIUS if snake[-1][0] < 0 else RADIUS
-                    snake[0] = (change - change % RADIUS, snake[-1][1])
+                    snake[-1] = (change, snake[-1][1])
                 if not (0 <= snake[-1][1] <= WINDOW_WIDTH):
                     change = WINDOW_HEIGHT - RADIUS if snake[-1][1] < 0 else RADIUS
-                    snake[0] = (snake[-1][0], change - change % RADIUS)
+                    snake[-1] = (snake[-1][0], change)
 
             if iter_food >= SPEED_FOOD + (DECREASE_SPEED_FOOD * 2) ** (len(foods)):
                 iter_food = 0

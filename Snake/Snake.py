@@ -145,24 +145,23 @@ def init_new_game():
 
             for i, pos in enumerate(snake):
                 pygame.draw.circle(snake_window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
-                if pos == snake[-1]:
-                    if not (0 <= pos[0] <= WINDOW_WIDTH and 0 <= pos[1] <= WINDOW_HEIGHT):
-                        if not CAN_CRASH_WALL:
-                            init_game_over()
-                            continue
 
-                        if not (0 <= pos[0] <= WINDOW_WIDTH):
-                            change = WINDOW_WIDTH - RADIUS if pos[0] < 0 else RADIUS
-                            snake[i] = (change - change % RADIUS, pos[1])
-                        if not (0 <= pos[1] <= WINDOW_WIDTH):
-                            change = WINDOW_HEIGHT - RADIUS if pos[1] < 0 else RADIUS
-                            snake[i] = (pos[0], change - change % RADIUS)
+            if not CAN_CRASH_SELF and snake[-1] in snake[:-1]:
+                init_game_over()
+                continue
 
-                    if not CAN_CRASH_SELF and i != len(snake) - 1 and pos == snake[-1]:
-                        init_game_over()
-                        continue
+            pygame.draw.circle(snake_window, EYE_COLOR, (snake[-1][0], snake[-1][1]), RADIUS_FOOD)
 
-                    pygame.draw.circle(snake_window, EYE_COLOR, (pos[0], pos[1]), RADIUS_FOOD)
+            if not (0 <= snake[-1][0] <= WINDOW_WIDTH and 0 <= snake[-1][1] <= WINDOW_HEIGHT):
+                if not CAN_CRASH_WALL:
+                    init_game_over()
+                    continue
+                if not (0 <= snake[-1][0] <= WINDOW_WIDTH):
+                    change = WINDOW_WIDTH - RADIUS if snake[-1][0] < 0 else RADIUS
+                    snake[0] = (change - change % RADIUS, snake[-1][1])
+                if not (0 <= snake[-1][1] <= WINDOW_WIDTH):
+                    change = WINDOW_HEIGHT - RADIUS if snake[-1][1] < 0 else RADIUS
+                    snake[0] = (snake[-1][0], change - change % RADIUS)
 
             if iter_food >= SPEED_FOOD + (DECREASE_SPEED_FOOD * 2) ** (len(foods)):
                 iter_food = 0

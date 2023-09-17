@@ -52,5 +52,4 @@ while True:
 
     pygame.display.update()
 
-    # устанавливаем частоту обновления экрана
     pygame.time.Clock().tick(60)

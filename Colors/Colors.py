@@ -16,11 +16,12 @@ RED = (255, 0, 0)
 ORANGE = (255, 150, 0)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
-LIGTH_BLUE = (0, 255, 255)
+LIGHT_BLUE = (0, 255, 255)
 BLUE = (0, 0, 255)
 PURPLE = (255, 0, 255)
+
 COLORS = ()
-for color in (RED, ORANGE, YELLOW, GREEN, LIGTH_BLUE, BLUE, PURPLE):
+for color in (RED, ORANGE, YELLOW, GREEN, LIGHT_BLUE, BLUE, PURPLE):
     COLORS += (color, )
 
 pygame.init()
@@ -30,25 +31,27 @@ background.fill(pygame.Color(COLORS[0]))
 pygame.display.set_caption("Game")
 clock = pygame.time.Clock()
 
-image = pygame.image.load("ball.jpg")
+image = pygame.image.load("image.jpg")
 image = pygame.transform.scale(image, IMAGE_SIZE)
 window.blit(image, (0, 0))
 
-class Butoon:
-    def __init__(self, x, y, title="", width=150, heigt=75, font='Verdana', size_font=12, button_color=GRAY, text_color=BLACK):
+
+class Button:
+    def __init__(self, x, y, title="", width=150, height=75, font='Verdana', size_font=12, button_color=GRAY, text_color=BLACK):
         self.font = pygame.font.SysFont(font, size_font)
         self.button_color = button_color
         self.text_color = text_color
         self.width = width
-        self.heigth = heigt
-        self.rect = pygame.Rect(x - width // 2, y - heigt // 2, width, heigt)
+        self.heigth = height
+        self.rect = pygame.Rect(x - width // 2, y - height // 2, width, height)
         self.text = self.font.render(title, True, text_color)
 
     def get_rect_center(self):
         return self.text.get_rect(center=self.rect.center)
 
-button1 = Butoon(WIDTH // 2 - 100, HEIGTH // 2, title='Вперёд!')
-button2 = Butoon(WIDTH // 2 + 100, HEIGTH // 2, title='Назад!')
+
+button1 = Button(WIDTH // 2 - 100, HEIGTH // 2, title='Вперёд!')
+button2 = Button(WIDTH // 2 + 100, HEIGTH // 2, title='Назад!')
 
 color = 0
 while True:

@@ -10,7 +10,7 @@ MIN_STAR_SIZE = 1
 STAR_SPEED = 3
 STAR_CHANGE_SIZE_SPEED = 1
 STAR_COLOR = 'white'
-count_stars = randint(400, 1000)
+count_stars = randint(100, 200)
 
 pygame.init()
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))

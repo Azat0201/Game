@@ -1,85 +1,74 @@
-import random
 import pygame
 
 pygame.init()
-screen_width = 640
-screen_height = 480
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('Лабиринт')
+STRING_MAZE = '''\
+-   
+1
 
-black = (0,0,0)
-white = (255,255,255)
-red = (255,0,0)
-blue = (0,0,255)
-green = (0,255,0)
+11
+-\
+'''
 
-# параметры стен и дверей
-line_width = 10
-line_gap = 40
-line_offset = 20
-door_width = 20
-door_gap = 40
-max_openings_per_line = 5
+def new_game():
+    global maze, x, y, score
+    maze = [list(line) for line in STRING_MAZE.split('\n')]
+    x, y = 2, 0
+    score = 0
 
-# параметры и стартовая позиция игрока
-player_radius = 10
-player_speed = 5
-player_x = screen_width - 12
-player_y = screen_height - line_offset
+new_game()
 
-# рисуем стены и двери
-lines = []
-for i in range(0, screen_width, line_gap):
-    rect = pygame.Rect(i, 0, line_width, screen_height)
-    num_openings = random.randint(1, max_openings_per_line)
-    if num_openings == 1:
-        # одна дверь посередине стены
-        door_pos = random.randint(line_offset + door_width, screen_height - line_offset - door_width)
-        lines.append(pygame.Rect(i, 0, line_width, door_pos - door_width))
-        lines.append(pygame.Rect(i, door_pos + door_width, line_width, screen_height - door_pos - door_width))
-    else:
-        # несколько дверей
-        opening_positions = [0] + sorted([random.randint(line_offset + door_width, screen_height - line_offset - door_width) for _ in range(num_openings-1)]) + [screen_height]
-        for j in range(num_openings):
-            lines.append(pygame.Rect(i, opening_positions[j], line_width, opening_positions[j+1]-opening_positions[j]-door_width))
+RECT = '-'
+COIN = '1'
+RADIUS = 20
+WIDTH = RADIUS * 2
+WINDOW_WIDTH = WIDTH * len(maze[0])
+WINDOW_HEIGHT = WIDTH * len(maze) + RADIUS
 
-clock = pygame.time.Clock()
+WINDOW_COLOR = 'black'
+RECT_COLOR = 'white'
+CIRCLE_COLOR = 'red'
+TEXT_COLOR = 'blue'
+COIN_COLOR = 'yellow'
+
+FONT = pygame.font.SysFont('Verdana', 10)
+window = pygame.display.set_mode((WINDOW_WIDTH,  WINDOW_HEIGHT))
+pygame.display.set_caption('Maze')
 
 while True:
+    window.fill(WINDOW_COLOR)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_w:
+                x -= 1
+            if event.key == pygame.K_s:
+                x += 1
+            if event.key == pygame.K_a:
+                y -= 1
+            if event.key == pygame.K_d:
+                y += 1
 
-    # передвижение игрока
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and player_x > player_radius:
-        player_x -= player_speed
-    if keys[pygame.K_RIGHT] and player_x < screen_width - player_radius:
-        player_x += player_speed
-    if keys[pygame.K_UP] and player_y > player_radius:
-        player_y -= player_speed
-    if keys[pygame.K_DOWN] and player_y < screen_height - player_radius:
-        player_y += player_speed
+    for i in range(len(maze)):
+        for j in range(len(maze[i])):
+            if maze[i][j] == RECT:
+                rect = pygame.Rect(WIDTH * j, WIDTH * i, WIDTH, WIDTH)
+                pygame.draw.rect(window, RECT_COLOR, rect)
+                if pygame.Rect(WIDTH * y, WIDTH * x, WIDTH, WIDTH).colliderect(rect):
+                    new_game()
+            if maze[i][j] == COIN:
+                if pygame.Rect(WIDTH * y, WIDTH * x, WIDTH, WIDTH).colliderect(
+                        pygame.Rect(WIDTH * j, WIDTH * i, WIDTH, WIDTH)):
+                    score += 1
+                    maze[i][j] = None
+                else:
+                    pygame.draw.circle(window, COIN_COLOR, (WIDTH * j + RADIUS, WIDTH * i + RADIUS), RADIUS // 2)
 
-    # проверка столкновений игрока со стенами
-    player_rect = pygame.Rect(player_x - player_radius, player_y - player_radius, player_radius * 2, player_radius * 2)
-    for line in lines:
-        if line.colliderect(player_rect):
-            # в случае столкновения возвращаем игрока назад
-            if player_x > line.left and player_x < line.right:
-                if player_y < line.top:
-                    player_y = line.top - player_radius
-                else:
-                    player_y = line.bottom + player_radius
-            elif player_y > line.top and player_y < line.bottom:
-                if player_x < line.left:
-                    player_x = line.left - player_radius
-                else:
-                    player_x = line.right + player_radius
-    screen.fill(black)
-    for line in lines:
-        pygame.draw.rect(screen, green, line)
-    pygame.draw.circle(screen, red, (player_x, player_y), player_radius)
+    if not (0 <= x * WIDTH <= WINDOW_HEIGHT - WIDTH and 0 <= y * WIDTH <= WINDOW_WIDTH - WIDTH):
+        new_game()
+
+    pygame.draw.circle(window, CIRCLE_COLOR, (WIDTH * y + RADIUS, WIDTH * x + RADIUS), RADIUS)
+    window.blit(FONT.render("Очки: " + str(score), True, TEXT_COLOR), (0, WINDOW_HEIGHT - RADIUS))
     pygame.display.update()
-    clock.tick(60)

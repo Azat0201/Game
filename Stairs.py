@@ -17,6 +17,7 @@ FONT_SIZE = 20
 FONT_COLOR = (255, 255, 255)
 clock = pygame.time.Clock()
 
+
 def game_loop():
     player_x = PLAYER_RADIUS
     player_y = WINDOW_HEIGHT - STEP_HEIGHT - PLAYER_RADIUS
@@ -55,6 +56,7 @@ def game_loop():
         window.blit(text, (10, 10))
         pygame.display.update()
         clock.tick(60)
+
 
 while True:
     game_loop()

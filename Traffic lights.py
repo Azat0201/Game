@@ -29,7 +29,7 @@ LIGHTS_POSITIONS = (
     (TRAFFIC_LIGHTS_X + TRAFFIC_LIGHTS_WIDTH // 2, TRAFFIC_LIGHTS_Y + TRAFFIC_LIGHTS_HEIGHT // 3 * 0.5),
     (TRAFFIC_LIGHTS_X + TRAFFIC_LIGHTS_WIDTH // 2, TRAFFIC_LIGHTS_Y + TRAFFIC_LIGHTS_HEIGHT // 3 * 1.5)
 )
-LIGHTS = (('green', 6), ('red', 2), ('yellow', 2))
+LIGHTS = (('green', 8), ('red', 3), ('yellow', 1))
 current_light = 0
 
 COUNT_ROADS = 5 * 2
@@ -87,9 +87,9 @@ while True:
         pygame.draw.rect(window, CAR_COLOR, car[0])
         if current_light == CAR_CAN_MOVE_LIGHT:
             car[0].y -= car[1]
-            if randint(0, 100) == 0 and car[0].x not in RIGHT_ROADS:
+            if randint(0, 1000) == 0 and car[0].x not in RIGHT_ROADS:
                 car[0].x += ROAD_WIDTH
-            if randint(0, 100) == 0 and car[0].x not in LEFT_ROADS:
+            if randint(0, 1000) == 0 and car[0].x not in LEFT_ROADS:
                 car[0].x -= ROAD_WIDTH
         if car[0].y > WINDOW_HEIGHT:
             cars.remove(car)

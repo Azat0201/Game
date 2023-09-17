@@ -6,13 +6,12 @@ WINDOW_SIZE = (640, 480)
 window = pygame.display.set_mode(WINDOW_SIZE)
 WINDOW_COLOR = (216, 233, 243)
 window.fill(WINDOW_COLOR)
-pygame.display.flip()
 pygame.display.set_caption('Animation')
 clock = pygame.time.Clock()
 
 frame_images = []
 for i in range(1, 9):
-    frame_images.append(pygame.image.load(f"frame{i}.png"))
+    frame_images.append(pygame.image.load(fr"frame{i}.png"))
 
 ANIMATION_LENGTH = len(frame_images)
 ANIMATION_SPEED = 15
@@ -41,8 +40,8 @@ while True:
 
     frame_position[0] += SPEED
     current_frame = frame_images[current_frame_index]
+
     if frame_position[0] > WINDOW_SIZE[0]:
         frame_position = [-current_frame.get_width(), frame_position[1]]
     window.blit(current_frame, frame_position)
-    pygame.display.flip()
-
+    pygame.display.update()

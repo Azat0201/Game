@@ -1,99 +1,85 @@
+import random
 import pygame
-from random import randint
-from time import sleep
 
 pygame.init()
-WINDOW_WIDTH = 1000
-WINDOW_HEIGHT = 500
-window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption('Maze 2')
+screen_width = 640
+screen_height = 480
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('Лабиринт')
 
-WINDOW_COLOR = (0,0,0)
-PLAYER_COLOR = (255,0,0)
-WALL_COLOR = (0,255,0)
+black = (0,0,0)
+white = (255,255,255)
+red = (255,0,0)
+blue = (0,0,255)
+green = (0,255,0)
 
-WALL_WIDTH = 10
-GAP = 150
+# параметры стен и дверей
+line_width = 10
+line_gap = 40
+line_offset = 20
+door_width = 20
 door_gap = 40
-MIN_DOORS_IN_LINE = 2
-MAX_DOORS_IN_LINE = 5
+max_openings_per_line = 5
 
-RADIUS = 10
-FPS = 60
-SPEED_X = 2
-SPEED_Y = 10
+# параметры и стартовая позиция игрока
+player_radius = 10
+player_speed = 5
+player_x = screen_width - 12
+player_y = screen_height - line_offset
 
-
-def create_line(y):
-    lines = []
-    num_openings = randint(MIN_DOORS_IN_LINE, MAX_DOORS_IN_LINE)
-    door_width = randint(RADIUS * 5, RADIUS * 8)
-    opening_positions = [0] + sorted(
-        [randint(door_width, WINDOW_HEIGHT - door_width) for _ in range(num_openings - 1)]) + [WINDOW_WIDTH]
-    for j in range(num_openings):
-        lines.append(pygame.Rect(y, opening_positions[j], WALL_WIDTH,
-                                 opening_positions[j + 1] - opening_positions[j] - door_width))
-    return lines
-
-
-
-def new_game():
-    global player_x, player_y, lines, time
-    time = 0
-    player_x = RADIUS * 3
-    player_y = WINDOW_HEIGHT // 2
-    lines = []
-    for i in range(GAP + GAP // 2, WINDOW_WIDTH, GAP):
-        lines.extend(create_line(i))
-
-new_game()
+# рисуем стены и двери
+lines = []
+for i in range(0, screen_width, line_gap):
+    rect = pygame.Rect(i, 0, line_width, screen_height)
+    num_openings = random.randint(1, max_openings_per_line)
+    if num_openings == 1:
+        # одна дверь посередине стены
+        door_pos = random.randint(line_offset + door_width, screen_height - line_offset - door_width)
+        lines.append(pygame.Rect(i, 0, line_width, door_pos - door_width))
+        lines.append(pygame.Rect(i, door_pos + door_width, line_width, screen_height - door_pos - door_width))
+    else:
+        # несколько дверей
+        opening_positions = [0] + sorted([random.randint(line_offset + door_width, screen_height - line_offset - door_width) for _ in range(num_openings-1)]) + [screen_height]
+        for j in range(num_openings):
+            lines.append(pygame.Rect(i, opening_positions[j], line_width, opening_positions[j+1]-opening_positions[j]-door_width))
 
 clock = pygame.time.Clock()
 
 while True:
-    time += 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
 
+    # передвижение игрока
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP] and player_y > RADIUS:
-        player_y -= SPEED_Y
-    if keys[pygame.K_DOWN] and player_y < WINDOW_HEIGHT - RADIUS:
-        player_y += SPEED_Y
+    if keys[pygame.K_LEFT] and player_x > player_radius:
+        player_x -= player_speed
+    if keys[pygame.K_RIGHT] and player_x < screen_width - player_radius:
+        player_x += player_speed
+    if keys[pygame.K_UP] and player_y > player_radius:
+        player_y -= player_speed
+    if keys[pygame.K_DOWN] and player_y < screen_height - player_radius:
+        player_y += player_speed
 
-    player_rect = pygame.Rect(player_x, player_y, 1, 1)
+    # проверка столкновений игрока со стенами
+    player_rect = pygame.Rect(player_x - player_radius, player_y - player_radius, player_radius * 2, player_radius * 2)
     for line in lines:
         if line.colliderect(player_rect):
-            pygame.draw.rect(window, 'blue', line)
-            pygame.draw.rect(window, 'pink', player_rect)
-            pygame.draw.rect(window, 'blue', pygame.Rect(line.x, line.y + (line.height if line.height < 0 else 0), line.width, abs(line.height)))
-            print(player_x, player_y, line, lines)
-            pygame.display.update()
-            clock.tick(FPS)
-            sleep(3)
-            new_game()
-
-
-    window.fill(WINDOW_COLOR)
+            # в случае столкновения возвращаем игрока назад
+            if player_x > line.left and player_x < line.right:
+                if player_y < line.top:
+                    player_y = line.top - player_radius
+                else:
+                    player_y = line.bottom + player_radius
+            elif player_y > line.top and player_y < line.bottom:
+                if player_x < line.left:
+                    player_x = line.left - player_radius
+                else:
+                    player_x = line.right + player_radius
+    screen.fill(black)
     for line in lines:
-        line.x -= SPEED_X
-        pygame.draw.rect(window, WALL_COLOR,
-                             pygame.Rect(line.x, line.y + (line.height if line.height < 0 else 0), line.width,
-                                         abs(line.height)))
-
-    if time >= GAP // SPEED_X:
-        lines.extend(create_line(lines[-1].x + GAP))
-
-        if time >= GAP // SPEED_X + 50:
-            time = 0
-            x = lines[0].x
-            for line in list(lines):
-                if line.x != x:
-                    break
-                lines.remove(line)
-
-    pygame.draw.circle(window, PLAYER_COLOR, (player_x, player_y), RADIUS)
+        pygame.draw.rect(screen, green, line)
+    pygame.draw.circle(screen, red, (player_x, player_y), player_radius)
     pygame.display.update()
-    clock.tick(FPS)
+    clock.tick(60)

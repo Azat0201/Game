@@ -11,9 +11,9 @@ COUNT_IMAGES = 8
 
 images = []
 for i in range(1, COUNT_IMAGES + 1):
-    images.append(pygame.image.load(f"fox{i}.png"))
+    images.append(pygame.image.load(fr"fox{i}.png"))
 
-kolobok_image = pygame.image.load(f"kolobok.png")
+kolobok_image = pygame.image.load(fr"kolobok.png")
 
 ANIMATION_SPEED = 15
 FRAME = 1.0 / ANIMATION_SPEED

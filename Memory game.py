@@ -1,9 +1,10 @@
 import pygame
+from math import ceil
 from random import shuffle, choices
 
 
 WINDOW_WIDTH = 1000
-WINDOW_HEIGHT = 600
+WINDOW_HEIGHT = 900
 FPS = 60
 WINDOW_COLOR = 'black'
 
@@ -11,19 +12,21 @@ pygame.init()
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Memory game')
 
-COUNT_CIRCLES = 6
-RADIUS = WINDOW_WIDTH // (COUNT_CIRCLES * 3)
-STRIP = WINDOW_WIDTH // (COUNT_CIRCLES * 2)
-GAP = (WINDOW_WIDTH - STRIP * 2) // (COUNT_CIRCLES - 1)
-POSITIONS_X = tuple(STRIP + GAP * i for i in range(COUNT_CIRCLES))
-POSITIONS_Y = (STRIP, GAP + STRIP)
+COUNT_COUPLES = 6
+COUNT_ROWS = ceil(COUNT_COUPLES / (WINDOW_WIDTH // 250))
+COUNT_CIRCLES_IN_ROW = COUNT_COUPLES * 2 // COUNT_ROWS
+RADIUS = WINDOW_WIDTH // (COUNT_CIRCLES_IN_ROW * 3)
+STRIP = 10 + RADIUS
+GAP = (WINDOW_WIDTH - STRIP * 2) // (COUNT_CIRCLES_IN_ROW - 1)
+POSITIONS_X = tuple(STRIP + GAP * i for i in range(COUNT_CIRCLES_IN_ROW))
+POSITIONS_Y = tuple(GAP * i + STRIP for i in range(COUNT_ROWS))
 
 TIME = 3
 FONT = pygame.font.SysFont('Verdana', 20)
 TEXT_COLOR = 'white'
 
 while True:
-    colors = ['#' + ''.join(choices('1234567890ABCDEF', k=6)) for _ in range(COUNT_CIRCLES)] * 2
+    colors = ['#' + ''.join(choices('1234567890ABCDEF', k=6)) for _ in range(COUNT_COUPLES)] * 2
     shuffle(colors)
     color_circles = tuple(color for color in colors)
     game = True
@@ -31,8 +34,8 @@ while True:
     score = 0
 
     circles_pos = []
-    for i, y in enumerate(POSITIONS_Y):
-        for j, x in enumerate(POSITIONS_X):
+    for x in POSITIONS_X:
+        for y in POSITIONS_Y:
             circles_pos.append((x, y))
 
     while True:
@@ -69,7 +72,7 @@ while True:
         if colors.count('gray') == 0:
             if game:
                 pygame.time.wait(TIME * 1000)
-                colors = ['gray'] * (COUNT_CIRCLES * 2)
+                colors = ['gray'] * (COUNT_COUPLES * 2)
                 game = False
             else:
                 pygame.time.wait(TIME * 500)

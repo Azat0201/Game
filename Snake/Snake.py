@@ -67,10 +67,10 @@ def new_loop():
         def get_rect_center(self):
             return self.text.get_rect(center=self.rect.center)
 
-    init_new_game()
+    new_game()
 
 
-def init_new_game():
+def new_game():
     pygame.display.set_caption('Snake')
     pygame.init()
     snake_window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -78,22 +78,22 @@ def init_new_game():
     FONT = pygame.font.SysFont('Verdana', 20)
 
     from Menu_snake import new_loop as exit_menu
-    button_restart = Button(WINDOW_WIDTH // 2 - WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, init_new_game, 'Заново', FONT)
+    button_restart = Button(WINDOW_WIDTH // 2 - WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, new_game, 'Заново', FONT)
     button_menu = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, exit_menu, 'Меню', FONT)
     button_exit = Button(WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, quit, 'Выйти', FONT)
     buttons = (button_restart, button_menu, button_exit)
 
-    global foods, game_over
+    global foods, game_over_Flag
     foods = [(-100, -100)]
     direction = (1, 0)
     iter_food = 0
     iter_snake = 0
-    game_over = False
+    game_over_Flag = False
     snake = [(WINDOW_WIDTH // 2 - RADIUS * 2 * i, WINDOW_HEIGHT // 2) for i in range(5, 0, -1)]
 
 
-    def init_game_over():
-        global game_over, game_over_text, best_score
+    def game_over():
+        global game_over_Flag, game_over_text, best_score
         score = len(snake) - 5
         if score <= best_score:
             game_over_text = FONT.render(f'Игра закончена! Счёт: {len(snake) - 5}\nРекорд: {best_score}', True, GAME_OVER_TEXT_COLOR)
@@ -108,7 +108,7 @@ def init_new_game():
             with open('Settings for snake', 'w') as file:
                 file.writelines(lines)
             best_score = score
-        game_over = True
+        game_over_Flag = True
 
 
     while True:
@@ -121,7 +121,7 @@ def init_new_game():
                 pygame.quit()
                 quit()
 
-        if not game_over:
+        if not game_over_Flag:
             iter_food += 1
             iter_snake += 1
 
@@ -136,7 +136,7 @@ def init_new_game():
                     elif event.key == pygame.K_d and direction[0] != -1:
                         direction = (1, 0)
                     elif event.key == pygame.K_q:
-                        init_game_over()
+                        game_over()
                         continue
 
             for food in foods:
@@ -150,14 +150,14 @@ def init_new_game():
                 pygame.draw.circle(snake_window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
 
             if not CAN_CRASH_SELF and snake[-1] in snake[:-1]:
-                init_game_over()
+                game_over()
                 continue
 
             pygame.draw.circle(snake_window, EYE_COLOR, (snake[-1][0], snake[-1][1]), RADIUS_FOOD)
 
             if not (0 <= snake[-1][0] <= WINDOW_WIDTH and 0 <= snake[-1][1] <= WINDOW_HEIGHT):
                 if not CAN_CRASH_WALL:
-                    init_game_over()
+                    game_over()
                     continue
                 if not (0 <= snake[-1][0] <= WINDOW_WIDTH):
                     change = WINDOW_WIDTH - RADIUS if snake[-1][0] < 0 else RADIUS

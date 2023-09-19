@@ -19,8 +19,9 @@ def create_food():
         foods.append(position)
 
 
-def new_loop():
-    global SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, CAN_CRASH_WALL, CAN_CRASH_SELF
+def new_loop(difficult):
+    global SPEED, DIFFERENCE_SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, \
+        CAN_CRASH_WALL, CAN_CRASH_SELF
     global WINDOW_COLOR, SNAKE_COLOR, EYE_COLOR, FOOD_COLOR, BUTTON_COLOR, \
         SCORE_TEXT_COLOR, GAME_OVER_TEXT_COLOR, BUTTON_TEXT_COLOR
     global FPS, RADIUS, RADIUS_FOOD, BUTTON_WIDTH, BUTTON_HEIGHT, Button, best_score
@@ -29,16 +30,17 @@ def new_loop():
         best_score = int(file.readline().split()[0].strip())
         file.readline()
         file.readline()
-        data = [int(file.readline().split()[0].strip()) for _ in range(7)]
+        data = [int(file.readline().split()[0].strip()) for _ in range(8)]
         file.readline()
         file.readline()
         colors = [file.readline().split()[0].strip() for _ in range(8)]
 
-    SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, CAN_CRASH_WALL, CAN_CRASH_SELF = data
+    SPEED, DIFFERENCE_SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, CAN_CRASH_WALL, CAN_CRASH_SELF = data
     WINDOW_COLOR, SNAKE_COLOR, EYE_COLOR, FOOD_COLOR, BUTTON_COLOR, \
      SCORE_TEXT_COLOR, GAME_OVER_TEXT_COLOR, BUTTON_TEXT_COLOR = colors
     WINDOW_WIDTH -= WINDOW_WIDTH % 30
     WINDOW_HEIGHT -= WINDOW_HEIGHT % 30
+    SPEED -= (difficult * DIFFERENCE_SPEED)
 
     user32 = ctypes.windll.user32
     MONITOR_WIDTH, MONITOR_HEIGHT = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
@@ -56,13 +58,10 @@ def new_loop():
     class Button:
         def __init__(self, x, y, function, title="", font=None, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
                      button_color=BUTTON_COLOR, button_text_color=BUTTON_TEXT_COLOR):
-            self.font = font
             self.function = function
             self.button_color = button_color
-            self.width = width
-            self.heigth = height
             self.rect = pygame.Rect(x - width // 2, y - height // 2, width, height)
-            self.text = self.font.render(title, True, button_text_color)
+            self.text = font.render(title, True, button_text_color)
 
         def get_rect_center(self):
             return self.text.get_rect(center=self.rect.center)
@@ -77,9 +76,9 @@ def new_game():
     clock = pygame.time.Clock()
     FONT = pygame.font.SysFont('Verdana', 20)
 
-    from Menu_snake import new_loop as exit_menu
+    import Menu_snake
     button_restart = Button(WINDOW_WIDTH // 2 - WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, new_game, 'Заново', FONT)
-    button_menu = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, exit_menu, 'Меню', FONT)
+    button_menu = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, Menu_snake.new_loop, 'Меню', FONT)
     button_exit = Button(WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, quit, 'Выйти', FONT)
     buttons = (button_restart, button_menu, button_exit)
 
@@ -123,7 +122,7 @@ def new_game():
 
         if not game_over_Flag:
             iter_food += 1
-            iter_snake += 1
+            iter_snake += 10
 
             for event in events:
                 if event.type == pygame.KEYDOWN:
@@ -170,7 +169,8 @@ def new_game():
                 iter_food = 0
                 create_food()
 
-            if iter_snake % SPEED == 0:
+            if iter_snake >= SPEED:
+                iter_snake = 0
                 del snake[0]
                 snake.append((snake[-1][0] + RADIUS * 2 * direction[0], snake[-1][1] + RADIUS * 2 * direction[1]))
 
@@ -191,7 +191,4 @@ def new_game():
                 snake_window.blit(button.text, button.get_rect_center())
 
         pygame.display.update()
-
-
-new_loop()
         

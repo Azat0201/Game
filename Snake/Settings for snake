@@ -1,7 +1,8 @@
 0 - best result
 
 Settings:
-5 - snake speed (the lower value, the higher speed)
+50 - snake speed (the lower value, the higher speed)
+12 - speed difference (the difference between the speeds of different difficulty levels)
 100 - food spawn frequency (the lower value, the more amount)
 920 - screen width
 900 - screen height

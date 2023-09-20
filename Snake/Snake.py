@@ -19,8 +19,8 @@ def create_food():
         foods.append(position)
 
 
-def new_loop(difficult):
-    global SPEED, DIFFERENCE_SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, \
+def new_loop(difficult, increase_food_time, can_crash_wall, can_crash_self):
+    global SPEED, DIFFERENCE_SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, INCREASE_SPEED_FOOD, \
         CAN_CRASH_WALL, CAN_CRASH_SELF
     global WINDOW_COLOR, SNAKE_COLOR, EYE_COLOR, FOOD_COLOR, BUTTON_COLOR, \
         SCORE_TEXT_COLOR, GAME_OVER_TEXT_COLOR, BUTTON_TEXT_COLOR
@@ -30,18 +30,21 @@ def new_loop(difficult):
         best_score = int(file.readline().split()[0].strip())
         file.readline()
         file.readline()
-        data = [int(file.readline().split()[0].strip()) for _ in range(8)]
+        data = [int(file.readline().split()[0].strip()) for _ in range(5)]
         file.readline()
         file.readline()
         colors = [file.readline().split()[0].strip() for _ in range(8)]
 
-    SPEED, DIFFERENCE_SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT, DECREASE_SPEED_FOOD, CAN_CRASH_WALL, CAN_CRASH_SELF = data
+    SPEED, DIFFERENCE_SPEED, SPEED_FOOD, WINDOW_WIDTH, WINDOW_HEIGHT = data
     WINDOW_COLOR, SNAKE_COLOR, EYE_COLOR, FOOD_COLOR, BUTTON_COLOR, \
      SCORE_TEXT_COLOR, GAME_OVER_TEXT_COLOR, BUTTON_TEXT_COLOR = colors
+
     WINDOW_WIDTH -= WINDOW_WIDTH % 30
     WINDOW_HEIGHT -= WINDOW_HEIGHT % 30
     SPEED -= (difficult * DIFFERENCE_SPEED)
-
+    INCREASE_SPEED_FOOD = increase_food_time
+    CAN_CRASH_WALL = can_crash_wall
+    CAN_CRASH_SELF = can_crash_self
     user32 = ctypes.windll.user32
     MONITOR_WIDTH, MONITOR_HEIGHT = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
     FPS = 60
@@ -165,7 +168,7 @@ def new_game():
                     change = WINDOW_HEIGHT - RADIUS if snake[-1][1] < 0 else RADIUS
                     snake[-1] = (snake[-1][0], change)
 
-            if iter_food >= SPEED_FOOD + (DECREASE_SPEED_FOOD * 2) ** (len(foods)):
+            if iter_food >= SPEED_FOOD + (INCREASE_SPEED_FOOD * 2) ** (len(foods)):
                 iter_food = 0
                 create_food()
 

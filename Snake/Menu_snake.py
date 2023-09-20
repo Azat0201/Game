@@ -9,31 +9,41 @@ WINDOW_COLOR = 'black'
 user32 = ctypes.windll.user32
 MONITOR_WIDTH, MONITOR_HEIGHT = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 FPS = 60
-WINDOW_X = MONITOR_WIDTH // 2 - WINDOW_WIDTH // 2
+WINDOW_X = MONITOR_WIDTH // 2 - WINDOW_WIDTH // 5
 WINDOW_Y = MONITOR_HEIGHT // 2 - WINDOW_HEIGHT // 2
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (WINDOW_X, WINDOW_Y)
 
-BUTTON_WIDTH = WINDOW_WIDTH // 5
-BUTTON_HEIGHT = WINDOW_HEIGHT // 10
+BUTTON_WIDTH = WINDOW_WIDTH // 4
+BUTTON_HEIGHT = WINDOW_HEIGHT // 8
+BUTTON_X = WINDOW_WIDTH // 2
+BUTTON_Y = BUTTON_HEIGHT + 15
 TEXT_COLOR = 'black'
 
 
 class Button:
-    def __init__(self, x, y, function, title="", width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font='Verdana', size_font=15, text_color='black',
-                 button_color=(150, 150, 150), parameters=None, activated_button_color=(100, 100, 100), activator='0'):
-        self.font = pygame.font.SysFont(font, size_font)
-        self.function = function
-        self.parameters = parameters
-        self.button_color = button_color
-        self.activator = activator
-        self.activated_button_color = activated_button_color
-        self.text_color = text_color
-        self.title = title
+    def __init__(self, x, y, function, title="", font=None, width=BUTTON_WIDTH, height=BUTTON_HEIGHT,
+                 text_color='black', button_color='#969696', parameters=None, activated_button_color='#646464', activator='0'):
         self.rect = pygame.Rect(x - width // 2, y - height // 2, width, height)
-        self.text = self.font.render(title, True, text_color)
+        self.function = function
+        self.font = font
+        self.text_color = text_color
+        self.text = self.font.render(title, True, self.text_color)
+        self.button_color = button_color
+        self.parameters = parameters
+        self.activated_button_color = activated_button_color
+        self.activator = activator
 
     def get_rect_center(self):
         return self.text.get_rect(center=self.rect.center)
+    
+    def use_function(self):
+        if self.parameters is None:
+            self.function()
+        else:
+            self.function(self.parameters)
+            
+    def get_button_color(self):
+        return self.activated_button_color if eval(self.activator) else self.button_color
 
 
 DIFFICULTIES = ('Лёгкий', 'Средний', 'Сложный')
@@ -82,27 +92,31 @@ def new_loop():
     pygame.init()
     window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption('Menu')
-    button_start = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 8, start_game, 'Начать игру')
+    FONT = pygame.font.SysFont('Verdana', 18)
 
-    button_difficulty = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 8 * 2,
-                               change_difficult, DIFFICULTIES[current_difficult])
+    button_start = Button(BUTTON_X, BUTTON_Y, start_game, 'Начать игру', FONT)
+    button_difficulty = Button(BUTTON_X, BUTTON_Y * 2, change_difficult, DIFFICULTIES[current_difficult], FONT)
     button_difficulty.parameters = button_difficulty
+    button_settings = Button(BUTTON_X, BUTTON_Y * 3, settings, 'Настройки', FONT)
 
-    button_settings = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 8 * 3, settings, 'Настройки')
-
-    button_increase = Button(WINDOW_WIDTH // 2 + BUTTON_WIDTH + 10, WINDOW_HEIGHT // 8 * 2, increase_food_time_function,
-                             'Увеличение времени\nеды', activator='increase_food_time')
+    buttons_data = (
+        (increase_food_time_function, 'Увеличение времени\nеды от количества еды', 'increase_food_time'),
+        (can_crash_wall_function, 'Врезаться в стены', 'can_crash_wall'),
+        (can_crash_self_function, 'Врезаться в себя', 'can_crash_self')
+    )
+    button_increase = Button(BUTTON_X + BUTTON_WIDTH + 15, BUTTON_Y * 2, buttons_data[0][0], buttons_data[0][1], FONT,
+                             activator=buttons_data[0][2])
     button_increase.parameters = button_increase
 
-    button_can_wall = Button(WINDOW_WIDTH // 2 + BUTTON_WIDTH + 10, WINDOW_HEIGHT // 8 * 3, can_crash_wall_function,
-                             'Врезаться в стены', activator='can_crash_wall')
+    button_can_wall = Button(BUTTON_X + BUTTON_WIDTH + 15, BUTTON_Y * 3, buttons_data[1][0], buttons_data[1][1], FONT,
+                             activator=buttons_data[1][2])
     button_can_wall.parameters = button_can_wall
 
-    button_can_self = Button(WINDOW_WIDTH // 2 + BUTTON_WIDTH + 10, WINDOW_HEIGHT // 8 * 4, can_crash_self_function,
-                             'Врезаться в себя', activator='can_crash_self')
+    button_can_self = Button(BUTTON_X + BUTTON_WIDTH + 15, BUTTON_Y * 4, buttons_data[2][0], buttons_data[2][1], FONT,
+                             activator=buttons_data[2][2])
     button_can_self.parameters = button_can_self
 
-    button_exit = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 8 * 4, quit, 'Выйти')
+    button_exit = Button(BUTTON_X, BUTTON_Y * 4, quit, 'Выйти', FONT)
     visible_buttons = (button_start, button_difficulty, button_settings, button_exit)
     setting_buttons = (button_increase, button_can_wall, button_can_self)
     buttons = visible_buttons
@@ -119,14 +133,10 @@ def new_loop():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for button in buttons:
                     if button.rect.collidepoint(event.pos):
-                        if button.parameters is None:
-                            button.function()
-                        else:
-                            button.function(button.parameters)
+                        button.use_function()
 
         for button in buttons:
-            pygame.draw.rect(window, button.activated_button_color if eval(button.activator) else button.button_color,
-                             button.rect)
+            pygame.draw.rect(window, button.get_button_color(), button.rect)
             window.blit(button.text, button.text.get_rect(center=button.rect.center))
 
         pygame.display.update()

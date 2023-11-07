@@ -1,28 +1,32 @@
 import pygame
 from random import randint
 from time import time
+from Button import Button
+from Menu import new_loop as go_menu
 
 
 def create_food():
-    global foods
+    global foods, snake
     position = foods[0]
     timeout = time() + 1
     while position in foods:
         if time() > timeout:
             break
         position = (randint(RADIUS, WINDOW_WIDTH - RADIUS), randint(RADIUS, WINDOW_HEIGHT - RADIUS))
-        position = (position[0] - position[0] % (RADIUS * 2) + RADIUS,
-                    position[1] - position[1] % (RADIUS * 2) + RADIUS)
+        position = (position[0] - position[0] % DIAMETER + RADIUS,
+                    position[1] - position[1] % DIAMETER + RADIUS)
+        if position in snake:
+            break
     else:
         foods.append(position)
 
 
-def new_loop(window_width, window_height, difficult, increase_food_time, can_crash_wall, can_crash_self):
-    global WINDOW_WIDTH, WINDOW_HEIGHT, SPEED, DIFFERENCE_SPEED, SPEED_FOOD, INCREASE_SPEED_FOOD, \
+def new_loop(window_size, difficult, increase_food_time, can_crash_wall, can_crash_self):
+    global WINDOW_WIDTH, WINDOW_HEIGHT, HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT, INCREASE_SPEED_FOOD, GAP, END_X, END_Y, \
         CAN_CRASH_WALL, CAN_CRASH_SELF, WINDOW_CENTRE_X, WINDOW_CENTRE_Y
     global WINDOW_COLOR, TEXT_COLOR, BUTTON_COLOR, BUTTON_TEXT_COLOR, ACTIVATED_BUTTON_COLOR, GAME_OVER_TEXT_COLOR, \
         SNAKE_COLOR, EYE_COLOR, FOOD_COLOR
-    global FPS, RADIUS, RADIUS_FOOD, BUTTON_WIDTH, BUTTON_HEIGHT, Button, best_score
+    global FPS, SPEED, SPEED_FOOD, RADIUS, DIAMETER, RADIUS_FOOD, DIRECTIONS, BUTTON_WIDTH, BUTTON_HEIGHT, best_score
 
     with open('Settings') as settings, open('Colors') as colors, open('Score') as best_score:
         best_score = int(best_score.readline().split()[0])
@@ -33,9 +37,10 @@ def new_loop(window_width, window_height, difficult, increase_food_time, can_cra
     WINDOW_COLOR, TEXT_COLOR, BUTTON_COLOR, BUTTON_TEXT_COLOR, ACTIVATED_BUTTON_COLOR, GAME_OVER_TEXT_COLOR, \
      SNAKE_COLOR, EYE_COLOR, FOOD_COLOR = colors
 
-    WINDOW_WIDTH = window_width
-    WINDOW_HEIGHT = window_height
-
+    WINDOW_WIDTH, WINDOW_HEIGHT = window_size
+    HALF_WINDOW_WIDTH = WINDOW_WIDTH // 2
+    HALF_WINDOW_HEIGHT = WINDOW_HEIGHT // 2
+    GAP = (WINDOW_WIDTH + WINDOW_HEIGHT) // 200
     INCREASE_SPEED_FOOD = increase_food_time
     CAN_CRASH_WALL = can_crash_wall
     CAN_CRASH_SELF = can_crash_self
@@ -43,62 +48,79 @@ def new_loop(window_width, window_height, difficult, increase_food_time, can_cra
     FPS = 60
     SPEED -= (difficult * DIFFERENCE_SPEED)
     RADIUS = (WINDOW_WIDTH + WINDOW_HEIGHT) // 100
+    DIAMETER = RADIUS * 2
     RADIUS_FOOD = RADIUS // 2
     BUTTON_WIDTH = WINDOW_WIDTH // 5
     BUTTON_HEIGHT = WINDOW_HEIGHT // 10
 
-    WINDOW_CENTRE_X = WINDOW_WIDTH // 2 - WINDOW_WIDTH // 2 % RADIUS
-    WINDOW_CENTRE_X -= RADIUS * int(not WINDOW_CENTRE_X // 2 % 2)
-    WINDOW_CENTRE_Y = WINDOW_HEIGHT // 2 - WINDOW_WIDTH // 2 % RADIUS
-    WINDOW_CENTRE_Y -= RADIUS * int(not WINDOW_CENTRE_Y // 2 % 2)
+    WINDOW_CENTRE_X = HALF_WINDOW_WIDTH - HALF_WINDOW_WIDTH % DIAMETER + RADIUS
+    WINDOW_CENTRE_Y = HALF_WINDOW_HEIGHT - HALF_WINDOW_HEIGHT % DIAMETER + RADIUS
+    END_X = WINDOW_WIDTH - (WINDOW_WIDTH - RADIUS) % DIAMETER
+    END_Y = WINDOW_HEIGHT - (WINDOW_HEIGHT - RADIUS) % DIAMETER
 
+    DIRECTIONS = {
+        (pygame.K_w, pygame.K_UP): (1, 1, (0, -1)),
+        (pygame.K_a, pygame.K_LEFT): (0, 1, (-1, 0)),
+        (pygame.K_s, pygame.K_DOWN): (1, -1, (0, 1)),
+        (pygame.K_d, pygame.K_RIGHT): (0, -1, (1, 0))
+    }
 
-    class Button:
-        def __init__(self, x, y, function, title="", parameters=None):
-            self.activate = False
-            self.rect = pygame.Rect(x - BUTTON_WIDTH // 2, y - BUTTON_HEIGHT // 2, BUTTON_WIDTH, BUTTON_HEIGHT)
-            self.function = function
-            self.title = title
-            self.parameters = parameters
-
-        def get_button_color(self):
-            activate = self.activate
-            self.activate = False
-            return ACTIVATED_BUTTON_COLOR if activate else BUTTON_COLOR
+    Button.width = BUTTON_WIDTH
+    Button.height = BUTTON_HEIGHT
+    Button.gap = GAP
+    Button.button_color = BUTTON_COLOR
+    Button.activated_color = ACTIVATED_BUTTON_COLOR
 
     new_game()
 
 
+def continue_function():
+    global is_pause
+    is_pause = False
+
+
 def new_game():
-    pygame.display.set_caption('Snake')
+    pygame.display.set_caption('Snake game')
     window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    clock = pygame.time.Clock()
     FONT = pygame.font.SysFont('Verdana', (WINDOW_WIDTH + WINDOW_HEIGHT) // 100)
 
-    import Menu
-    button_restart = Button(WINDOW_WIDTH // 2 - WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, new_game, 'Заново')
-    button_menu = Button(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, Menu.new_loop, 'Меню')
-    button_exit = Button(WINDOW_WIDTH // 2 + WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, quit, 'Выйти')
-    buttons = (button_restart, button_menu, button_exit)
+    BUTTONS_DATA = (
+        (HALF_WINDOW_WIDTH - (BUTTON_WIDTH + GAP) // 2, HALF_WINDOW_HEIGHT, new_game, 'Заново'),
+        (HALF_WINDOW_WIDTH + (BUTTON_WIDTH + GAP) // 2, HALF_WINDOW_HEIGHT, go_menu, 'Меню'),
+        (HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT - (BUTTON_HEIGHT + GAP) * 2, continue_function, 'Продолжить'),
+        (HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT - (BUTTON_HEIGHT + GAP) * 1, new_game, 'Заново'),
+        (HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT - (BUTTON_HEIGHT + GAP) * 0, go_menu, 'Меню'),
+        (HALF_WINDOW_WIDTH, HALF_WINDOW_HEIGHT - (BUTTON_HEIGHT + GAP) * -1, quit, 'Выйти')
+    )
 
-    global foods, game_over_Flag
+    button_restart_game_over = Button(*BUTTONS_DATA[0])
+    button_menu_game_over = Button(*BUTTONS_DATA[1])
+
+    button_continue = Button(*BUTTONS_DATA[2])
+    button_restart_pause = Button(*BUTTONS_DATA[3])
+    button_menu_pause = Button(*BUTTONS_DATA[4])
+    button_quit = Button(*BUTTONS_DATA[5])
+
+    game_over_buttons = (button_restart_game_over, button_menu_game_over)
+    pause_buttons = (button_continue, button_restart_pause, button_menu_pause, button_quit)
+
+    global foods, is_pause, snake
     foods = [(-100, -100)]
     direction = (1, 0)
     iter_food = 0
     iter_snake = 0
-    game_over_Flag = False
-    snake = [(WINDOW_CENTRE_X - i * RADIUS * 2, WINDOW_CENTRE_Y) for i in range(5, 0, -1)]
+    is_pause = False
+    snake = [(WINDOW_CENTRE_X - i * DIAMETER, WINDOW_CENTRE_Y) for i in range(5, 0, -1)]
 
 
     def game_over():
-        global game_over_Flag, game_over_text, best_score
+        global game_over_text_line1, game_over_text_line2, best_score
         score = len(snake) - 5
+        game_over_text_line1 = FONT.render(f'Игра закончена! Счёт: {len(snake) - 5}', True, GAME_OVER_TEXT_COLOR)
         if score <= best_score:
-            game_over_text = FONT.render(f'Игра закончена! Счёт: {len(snake) - 5}\nРекорд: {best_score}',
-                                         True, GAME_OVER_TEXT_COLOR)
+            game_over_text_line2 = FONT.render(f'Рекорд: {best_score}', True, GAME_OVER_TEXT_COLOR)
         else:
-            game_over_text = FONT.render(f'Игра закончена! Счёт: {len(snake) - 5}\nПредыдущий рекорд: {best_score}',
-                                         True, GAME_OVER_TEXT_COLOR)
+            game_over_text_line2 = FONT.render(f'Предыдущий рекорд: {best_score}', True, GAME_OVER_TEXT_COLOR)
             with open('Score') as file:
                 line = file.readline().split()
                 line[0] = str(score)
@@ -106,127 +128,137 @@ def new_game():
             with open('Score', 'w') as file:
                 file.write(' '.join(line) + '\n')
             best_score = score
-        game_over_Flag = True
 
 
     while True:
-        clock.tick(FPS)
+        pygame.time.Clock().tick(FPS)
         window.fill(WINDOW_COLOR)
 
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+        if is_pause:
+            snake = prev_snake
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    is_pause = False
+                    break
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for button in pause_buttons:
+                        if button.rect.collidepoint(event.pos):
+                            button.use_function()
+                if event.type == pygame.QUIT:
+                    quit()
 
-        if not game_over_Flag:
+            for food in foods:
+                pygame.draw.circle(window, FOOD_COLOR, (food[0], food[1]), RADIUS_FOOD)
+
+            for i, pos in enumerate(snake):
+                pygame.draw.circle(window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
+            pygame.draw.circle(window, EYE_COLOR, (snake[-1][0], snake[-1][1]), RADIUS_FOOD)
+
+            for button in pause_buttons:
+                if button.rect.collidepoint(pygame.mouse.get_pos()):
+                    button.change_active()
+                text = FONT.render(button.text, True, BUTTON_TEXT_COLOR)
+                pygame.draw.rect(window, ACTIVATED_BUTTON_COLOR, button.frame)
+                pygame.draw.rect(window, button.color, button.rect)
+                window.blit(text, text.get_rect(center=button.rect.center))
+        else:
             iter_food += 1
             iter_snake += 10
 
-            for event in events:
+            for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key in (pygame.K_w, pygame.K_UP) and direction[1] != 1:
-                        copy_snake = list(snake[1:]) + [(snake[-1][0], snake[-1][1] + RADIUS * -2)]
-                        if copy_snake[-1] == copy_snake[-3]:
-                            iter_snake = 0
-                            snake = snake[1:] + [(snake[-1][0] + RADIUS * 2 * direction[0],
-                                                  snake[-1][1] + RADIUS * 2 * direction[1])]
-                        direction = (0, -1)
-                    elif event.key in (pygame.K_a, pygame.K_LEFT) and direction[0] != 1:
-                        copy_snake = list(snake[1:]) + [(snake[-1][0] + RADIUS * -2, snake[-1][1])]
-                        if copy_snake[-1] == copy_snake[-3]:
-                            iter_snake = 0
-                            snake = snake[1:] + [(snake[-1][0] + RADIUS * 2 * direction[0],
-                                                  snake[-1][1] + RADIUS * 2 * direction[1])]
-                        direction = (-1, 0)
-                    elif event.key in (pygame.K_s, pygame.K_DOWN) and direction[1] != -1:
-                        copy_snake = list(snake[1:]) + [(snake[-1][0], snake[-1][1] + RADIUS * 2)]
-                        if copy_snake[-1] == copy_snake[-3]:
-                            iter_snake = 0
-                            snake = snake[1:] + [(snake[-1][0] + RADIUS * 2 * direction[0],
-                                                  snake[-1][1] + RADIUS * 2 * direction[1])]
-                        direction = (0, 1)
-                    elif event.key in (pygame.K_d, pygame.K_RIGHT) and direction[0] != -1:
-                        copy_snake = list(snake[1:]) + [(snake[-1][0] + RADIUS * 2, snake[-1][1])]
-                        if copy_snake[-1] == copy_snake[-3]:
-                            iter_snake = 0
-                            snake = snake[1:] + [(snake[-1][0] + RADIUS * 2 * direction[0],
-                                                  snake[-1][1] + RADIUS * 2 * direction[1])]
-                        direction = (1, 0)
-                    elif event.key == pygame.K_q:
+                    for key, data in DIRECTIONS.items():
+                        if event.key in key and direction[data[0]] != data[1]:
+                            copy_snake = list(snake[1:]) + [(snake[-1][0] + DIAMETER * data[2][0], snake[-1][1] + DIAMETER * data[2][1])]
+                            if copy_snake[-1] == copy_snake[-3]:
+                                iter_snake = 0
+                                snake = snake[1:] + [(snake[-1][0] + DIAMETER * direction[0],
+                                                      snake[-1][1] + DIAMETER * direction[1])]
+                            direction = data[2]
+                    if event.key == pygame.K_ESCAPE:
                         game_over()
-                        continue
-                    elif event.key == pygame.K_e:
-                        global SPEED
-                        SPEED = 1000000
+                        is_pause = True
+                    if event.key == pygame.K_q:
+                        game_over()
+                if event.type == pygame.QUIT:
+                    quit()
 
             if iter_snake >= SPEED:
                 iter_snake = 0
                 del snake[0]
-                snake.append((snake[-1][0] + RADIUS * 2 * direction[0], snake[-1][1] + RADIUS * 2 * direction[1]))
+                snake.append((snake[-1][0] + DIAMETER * direction[0], snake[-1][1] + DIAMETER * direction[1]))
+
+            if iter_food >= SPEED_FOOD + (INCREASE_SPEED_FOOD * 2) ** (len(foods)):
+                iter_food = 0
+                create_food()
 
             for food in foods:
-                pygame.draw.circle(window, FOOD_COLOR, (food[0], food[1]), RADIUS_FOOD)
-                if abs(food[0] - snake[-1][0]) < RADIUS * 2 and abs(food[1] - snake[-1][1]) < RADIUS * 2:
+                pygame.draw.circle(window, FOOD_COLOR, food, RADIUS_FOOD)
+                if abs(food[0] - snake[-1][0]) < DIAMETER and abs(food[1] - snake[-1][1]) < DIAMETER:
                     foods.remove(food)
                     snake.insert(0, (snake[0][0] - (snake[1][0] - snake[0][0]),
                                      snake[0][1] - (snake[1][1] - snake[0][1])))
 
             if not CAN_CRASH_SELF and snake[-1] in snake[:-1]:
                 game_over()
-                continue
+                break
 
             if not (0 <= snake[-1][0] <= WINDOW_WIDTH and 0 <= snake[-1][1] <= WINDOW_HEIGHT):
                 if not CAN_CRASH_WALL:
                     game_over()
-                    continue
+                    break
                 if not (0 <= snake[-1][0] <= WINDOW_WIDTH):
-                    change = WINDOW_WIDTH - RADIUS if snake[-1][0] < 0 else RADIUS
+                    change = END_X if snake[-1][0] < 0 else RADIUS
                     snake[-1] = (change, snake[-1][1])
-                if not (0 <= snake[-1][1] <= WINDOW_WIDTH):
-                    change = WINDOW_HEIGHT - RADIUS if snake[-1][1] < 0 else RADIUS
+                if not (0 <= snake[-1][1] <= WINDOW_HEIGHT):
+                    change = END_Y if snake[-1][1] < 0 else RADIUS
                     snake[-1] = (snake[-1][0], change)
 
             for i, pos in enumerate(snake):
                 pygame.draw.circle(window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
             pygame.draw.circle(window, EYE_COLOR, (snake[-1][0], snake[-1][1]), RADIUS_FOOD)
 
-            if iter_food >= SPEED_FOOD + (INCREASE_SPEED_FOOD * 2) ** (len(foods)):
-                iter_food = 0
-                create_food()
-
-            score_text = FONT.render(f'Очки: {(len(snake) - 5)}', True, TEXT_COLOR)
-            window.blit(score_text, (10, 10))
             prev_snake = list(snake)
+        score_text = FONT.render(f'Очки: {(len(snake) - 5)}', True, TEXT_COLOR)
+        window.blit(score_text, (GAP, GAP))
+        pygame.display.update()
 
-        else:
-            snake = prev_snake
-            for event in events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    for button in buttons:
-                        if button.rect.collidepoint(event.pos):
-                            button.function()
+    while True:
+        pygame.time.Clock().tick(FPS)
+        window.fill(WINDOW_COLOR)
 
-            for food in foods:
-                pygame.draw.circle(window, FOOD_COLOR, (food[0], food[1]), RADIUS_FOOD)
+        snake = prev_snake
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for button in game_over_buttons:
+                    if button.rect.collidepoint(event.pos):
+                        button.use_function()
+            if event.type == pygame.QUIT:
+                quit()
 
-            for i, pos in enumerate(snake):
-                pygame.draw.circle(window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
-            pygame.draw.circle(window, 'red', (snake[-1][0], snake[-1][1]), RADIUS)
-            pygame.draw.circle(window, EYE_COLOR, (snake[-1][0], snake[-1][1]), RADIUS_FOOD)
+        for food in foods:
+            pygame.draw.circle(window, FOOD_COLOR, (food[0], food[1]), RADIUS_FOOD)
 
-            score_text = FONT.render(f'Очки: {(len(snake) - 5)}', True, TEXT_COLOR)
-            window.blit(score_text, (10, 10))
+        for i, pos in enumerate(snake):
+            pygame.draw.circle(window, SNAKE_COLOR, (pos[0], pos[1]), RADIUS)
+        pygame.draw.circle(window, 'red', (snake[-1][0], snake[-1][1]), RADIUS)
+        pygame.draw.circle(window, EYE_COLOR, (snake[-1][0], snake[-1][1]), RADIUS_FOOD)
 
-            window.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2,
-                                               WINDOW_HEIGHT // 2 - game_over_text.get_width() // 2))
+        score_text = FONT.render(f'Очки: {(len(snake) - 5)}', True, TEXT_COLOR)
+        window.blit(score_text, (10, 10))
 
-            for button in buttons:
-                if button.rect.collidepoint(pygame.mouse.get_pos()):
-                    button.activate = True
-                text = FONT.render(button.title, True, BUTTON_TEXT_COLOR)
-                pygame.draw.rect(window, button.get_button_color(), button.rect)
-                window.blit(text, text.get_rect(center=button.rect.center))
+        window.blit(game_over_text_line1, (HALF_WINDOW_WIDTH - game_over_text_line1.get_width() // 2,
+                                           HALF_WINDOW_HEIGHT - BUTTON_HEIGHT - game_over_text_line1.get_height()))
+        window.blit(game_over_text_line2, (HALF_WINDOW_WIDTH - game_over_text_line2.get_width() // 2,
+                                           HALF_WINDOW_HEIGHT - BUTTON_HEIGHT))
+
+        for button in game_over_buttons:
+            if button.rect.collidepoint(pygame.mouse.get_pos()):
+                button.change_active()
+            text = FONT.render(button.text, True, BUTTON_TEXT_COLOR)
+            pygame.draw.rect(window, ACTIVATED_BUTTON_COLOR, button.frame)
+            pygame.draw.rect(window, button.color, button.rect)
+            window.blit(text, text.get_rect(center=button.rect.center))
 
         pygame.display.update()
         

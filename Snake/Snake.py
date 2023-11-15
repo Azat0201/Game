@@ -65,11 +65,11 @@ def new_loop(window_size, difficult, increase_food_time, can_crash_wall, can_cra
         (pygame.K_d, pygame.K_RIGHT): (0, -1, (1, 0))
     }
 
-    Button.width = BUTTON_WIDTH
-    Button.height = BUTTON_HEIGHT
-    Button.gap = GAP
-    Button.button_color = BUTTON_COLOR
-    Button.activated_color = ACTIVATED_BUTTON_COLOR
+    Button.width_class = BUTTON_WIDTH
+    Button.height_class = BUTTON_HEIGHT
+    Button.gap_class = GAP
+    Button.color_class = BUTTON_COLOR
+    Button.activated_color_class = ACTIVATED_BUTTON_COLOR
 
     new_game()
 
